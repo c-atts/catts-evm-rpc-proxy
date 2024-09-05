@@ -26,7 +26,7 @@ export class RpcProxy extends DurableObject {
   responseText?: string;
   responseStatus?: number;
 
-  constructor(ctx: RpcProxyState, env: Env) {
+  constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.alchemyApiKey = env.ALCHEMY_API_KEY;
   }
@@ -75,24 +75,27 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<Response> {
-    let json: JsonRpcRequest;
-    try {
-      json = await request.json();
-      if (json.jsonrpc !== "2.0" || !json.method || !json.params) {
-        throw new Error();
-      }
-    } catch (e) {
-      console.error(e);
-      return new Response("Invalid JSON-RPC request", { status: 400 });
+    switch (request.method) {
+      case "OPTIONS":
+        return new Response(null, {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          },
+        });
+      case "GET":
+        return new Response("Method not allowed", { status: 405 });
+      case "POST":
+        let json: JsonRpcRequest;
+        json = await request.json();
+        if (json.jsonrpc !== "2.0" || !json.method || !json.params) {
+          throw new Error("Invalid JSON-RPC request");
+        }
+        let id: DurableObjectId = env.RPC_PROXY.idFromName(json.id.toString());
+        let stub = env.RPC_PROXY.get(id);
+        const path = new URL(request.url).pathname;
+        return stub.proxyRpcRequest(json, path.slice(1));
     }
-
-    const path = new URL(request.url).pathname;
-    if (path !== "/eth-sepolia" && path !== "/opt-mainnet") {
-      return new Response("Not found", { status: 404 });
-    }
-
-    let id: DurableObjectId = env.RPC_PROXY.idFromName(json.id.toString());
-    let stub = env.RPC_PROXY.get(id);
-    return stub.proxyRpcRequest(json, path.slice(1));
+    return new Response("Bad request", { status: 400 });
   },
 };
