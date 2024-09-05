@@ -22,8 +22,8 @@ ALCHEMY_API_KEY=<API_KEY>
 ### 2. Run
 
 ```bash
-npm i
-npm run dev
+pnpm i
+pnpm run dev
 ```
 
 ## Production
@@ -39,7 +39,7 @@ npx wrangler secret put ALCHEMY_API_KEY
 ### 2. Deploy
 
 ```bash
-npm run deploy
+pnpm run deploy
 ```
 
 ## Wrangler
@@ -47,3 +47,18 @@ npm run deploy
 Wrangler is used to develop, deploy, and configure your Worker via CLI.
 
 Further documentation for Wrangler can be found [here](https://developers.cloudflare.com/workers/tooling/wrangler).
+
+## Author
+
+- [kristofer@kristoferlund.se](mailto:kristofer@kristoferlund.se)
+- Twitter: [@kristoferlund](https://twitter.com/kristoferlund)
+- Discord: kristoferkristofer
+- Telegram: [@kristoferkristofer](https://t.me/kristoferkristofer)
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request if you have any suggestions or improvements.
