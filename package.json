@@ -1,5 +1,5 @@
 {
-  "name": "catts-evm-proxy-2",
+  "name": "catts-evm-rpc-proxy",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,8 +9,8 @@
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240512.0",
+    "@cloudflare/workers-types": "^4.20240821.1",
     "typescript": "^5.0.4",
-    "wrangler": "^3.56.0"
+    "wrangler": "^3.72.0"
   }
 }
