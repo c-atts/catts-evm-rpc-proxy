@@ -1,4 +1,4 @@
-# catts-evm-proxy-2
+# catts-evm-rpc-proxy
 
 Runs a Cloudflare Worker that proxies requests to the [Alchemy](https://www.alchemy.com) API. The worker is deployed to Cloudflare's [edge infrastructure](https://www.cloudflare.com/network/).
 
