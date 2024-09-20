@@ -88,11 +88,7 @@ export default {
       case "POST":
         let jsonRpcRequest: JsonRpcRequest;
         jsonRpcRequest = await request.json();
-        if (
-          jsonRpcRequest.jsonrpc !== "2.0" ||
-          !jsonRpcRequest.method ||
-          !jsonRpcRequest.params
-        ) {
+        if (jsonRpcRequest.jsonrpc !== "2.0" || !jsonRpcRequest.method) {
           return new Response("Invalid JSON-RPC request", { status: 400 });
         }
         const path = new URL(request.url).pathname;
