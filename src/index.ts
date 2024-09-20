@@ -33,7 +33,7 @@ export class RpcProxy extends DurableObject {
 
   async proxyRpcRequest(
     request: JsonRpcRequest,
-    chain: string,
+    chain: string
   ): Promise<Response> {
     if (this.state === RpcProxyState.NotStarted) {
       this.state = RpcProxyState.InProgress;
@@ -73,7 +73,7 @@ export default {
   async fetch(
     request: Request,
     env: Env,
-    ctx: ExecutionContext,
+    ctx: ExecutionContext
   ): Promise<Response> {
     switch (request.method) {
       case "OPTIONS":
@@ -86,15 +86,28 @@ export default {
       case "GET":
         return new Response("Method not allowed", { status: 405 });
       case "POST":
-        let json: JsonRpcRequest;
-        json = await request.json();
-        if (json.jsonrpc !== "2.0" || !json.method || !json.params) {
-          throw new Error("Invalid JSON-RPC request");
+        let jsonRpcRequest: JsonRpcRequest;
+        jsonRpcRequest = await request.json();
+        if (
+          jsonRpcRequest.jsonrpc !== "2.0" ||
+          !jsonRpcRequest.method ||
+          !jsonRpcRequest.params
+        ) {
+          return new Response("Invalid JSON-RPC request", { status: 400 });
         }
-        let id: DurableObjectId = env.RPC_PROXY.idFromName(json.id.toString());
-        let stub = env.RPC_PROXY.get(id);
         const path = new URL(request.url).pathname;
-        return stub.proxyRpcRequest(json, path.slice(1));
+        const chain = path.slice(1);
+        if (!chain || typeof chain !== "string") {
+          return new Response(
+            "Invalid chain. Call this endpoint with a url in this format: https:://<worker-url>/<chain>",
+            { status: 400 }
+          );
+        }
+        let id: DurableObjectId = env.RPC_PROXY.idFromName(
+          jsonRpcRequest.id.toString()
+        );
+        let stub = env.RPC_PROXY.get(id);
+        return stub.proxyRpcRequest(jsonRpcRequest, chain);
     }
     return new Response("Bad request", { status: 400 });
   },
