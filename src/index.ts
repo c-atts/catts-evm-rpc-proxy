@@ -1,21 +1,21 @@
 import { DurableObject } from "cloudflare:workers";
+import { blake3 } from '@noble/hashes/blake3';
 
 export interface Env {
   RPC_PROXY: DurableObjectNamespace<RpcProxy>;
   ALCHEMY_API_KEY: string;
 }
 
-type JsonRpcRequest = {
-  jsonrpc: "2.0";
-  method: string;
-  params: any;
-  id: number;
-};
-
 const enum RpcProxyState {
   NotStarted,
   InProgress,
   Done,
+}
+
+function toHexString(byteArray: Uint8Array) {
+  return Array.from(byteArray, byte => {
+    return byte.toString(16).padStart(2, '0');
+  }).join('');
 }
 
 // RpcProxy is a Durable Object that proxies JSON-RPC requests to Alchemy.
@@ -32,7 +32,7 @@ export class RpcProxy extends DurableObject {
   }
 
   async proxyRpcRequest(
-    request: JsonRpcRequest,
+    rpcRequest: string,
     chain: string
   ): Promise<Response> {
     if (this.state === RpcProxyState.NotStarted) {
@@ -44,7 +44,7 @@ export class RpcProxy extends DurableObject {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(request),
+          body: rpcRequest,
         });
         this.responseText = await response.text();
         this.responseStatus = response.status;
@@ -86,11 +86,6 @@ export default {
       case "GET":
         return new Response("Method not allowed", { status: 405 });
       case "POST":
-        let jsonRpcRequest: JsonRpcRequest;
-        jsonRpcRequest = await request.json();
-        if (jsonRpcRequest.jsonrpc !== "2.0" || !jsonRpcRequest.method) {
-          return new Response("Invalid JSON-RPC request", { status: 400 });
-        }
         const path = new URL(request.url).pathname;
         const chain = path.slice(1);
         if (!chain || typeof chain !== "string") {
@@ -99,11 +94,15 @@ export default {
             { status: 400 }
           );
         }
+        const rpcRequest = await request.text();
+        const requestId = blake3(rpcRequest);
+        console.log(rpcRequest);
+        console.log(toHexString(requestId));
         let id: DurableObjectId = env.RPC_PROXY.idFromName(
-          jsonRpcRequest.id.toString()
+          toHexString(requestId)
         );
         let stub = env.RPC_PROXY.get(id);
-        return stub.proxyRpcRequest(jsonRpcRequest, chain);
+        return stub.proxyRpcRequest(rpcRequest, chain);
     }
     return new Response("Bad request", { status: 400 });
   },
