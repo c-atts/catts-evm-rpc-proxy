@@ -96,8 +96,6 @@ export default {
         }
         const rpcRequest = await request.text();
         const requestId = blake3(rpcRequest);
-        console.log(rpcRequest);
-        console.log(toHexString(requestId));
         let id: DurableObjectId = env.RPC_PROXY.idFromName(
           toHexString(requestId)
         );
