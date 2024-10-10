@@ -20,7 +20,13 @@ The worker is configured using the following environment variables:
 
 ### 2. Configure
 
-Configure the worker by setting the environment variable using:
+Give the worker a name by editing `wrangler.toml`:
+
+```toml
+name = "..."
+```
+
+Configure Alchemy API key:
 
 ```bash
 npx wrangler secret put ALCHEMY_API_KEY
