@@ -10,3 +10,6 @@ class_name = "RpcProxy"
 [[migrations]]
 tag = "v1"
 new_classes = ["RpcProxy"]
+
+[observability]
+enabled = true
